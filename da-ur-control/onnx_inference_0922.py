@@ -18,13 +18,14 @@ obs_velocity = [0.0, 0.0, 0.0,] # vector3
 obs_ang_velocity = [-0.0011297821765765548, -0.0024679843336343765, 0.004935592878609896] # vector3
 
 def to_rotation(vector):
-    rx = vector[:, 0]
-    ry = vector[:, 1]
-    rz = vector[:, 2]
-    rotation_x_deg = np.degrees(np.arctan2(ry, rz)).reshape(-1, 1)
-    rotation_y_deg = np.degrees(np.arctan2(rx, rz)).reshape(-1, 1)
-    rotation_z_deg = np.degrees(np.arctan2(ry, rx)).reshape(-1, 1)
-    rotation = np.hstack((rotation_x_deg, rotation_y_deg, rotation_z_deg))
+    rx = vector[0]
+    ry = vector[1]
+    rz = vector[2]
+    rotation_x_deg = np.arctan2(ry, rz)
+    rotation_y_deg = np.arctan2(rx, rz)
+    rotation_z_deg = np.arctan2(ry, rx)
+    # rotation = np.hstack((rotation_x_deg, rotation_y_deg, rotation_z_deg))
+    rotation = [rotation_x_deg,rotation_y_deg,rotation_z_deg]
     return rotation
 
 # convert tool orientation to euler rotation
@@ -35,7 +36,7 @@ obs_target_rotation = to_rotation(obs_target_orientation)
 input_data = np.array((obs_target_pos + obs_target_rotation + obs_position + obs_rotation
                + obs_force + obs_torque + obs_velocity + obs_ang_velocity),
                dtype=np.float32)
-input_data = input_data.reshape(1, 22)
+input_data = input_data.reshape(1, 24)
 
 # Run inference
 ort_inputs = {ort_session.get_inputs()[0].name: input_data}
