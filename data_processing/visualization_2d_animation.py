@@ -39,7 +39,8 @@ row_sums = np.sum(distance, axis=1)  # Sum along axis=1
 result = row_sums[:, np.newaxis]
 reward = 1 / (result + 0.001)
 
-# select data to be visualized
+# Select data to be visualized. 
+# Can be: (reward, tcp_poses_sampled, tcp_forces_sampled, tcp_torques_sampled, tcp_speeds_sampled)
 data_sampled = reward
 data_name_str = "Reward"
 

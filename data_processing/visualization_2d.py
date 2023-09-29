@@ -51,9 +51,15 @@ plt.legend()
 
 '''
 
-
+# Change to the data to be visualized. 
+# Can be: (tcp_poses_sampled, tcp_forces_sampled, tcp_torques_sampled)
+# Example: tcp_forces_sampled
 for i in range(tcp_forces_sampled.shape[1]):
     plt.plot(timestamps_sampled, tcp_forces_sampled[:,i], label=f'force {tcp_force_cols[i]}')
+
+# Example: tcp_torques_sampled
+# for i in range(tcp_torques_sampled.shape[1]):
+#     plt.plot(timestamps_sampled, tcp_torques_sampled[:,i], label=f'force {tcp_torque_cols[i]}')
 
 plt.xlabel('Time')
 plt.ylabel('Torque Value')
