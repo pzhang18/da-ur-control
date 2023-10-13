@@ -188,8 +188,8 @@ with open(args.output, writeModes) as csvfile:
     keep_running = True
     # Set Target
     obs_target_pos = [0.37797, 0.54870, 0.5524,] # Manually measure vector3
-    target_rotarion = [1.201, 2.908, -0.233] # vector3
-    obs_target_orientation = to_orientation(target_rotarion) # vector3
+    obs_target_rotation = [1.201, 2.908, -0.233] # vector3
+    # Debugging: obs_target_orientation = to_orientation(target_rotarion) # vector3
 
     while keep_running:
 
@@ -225,25 +225,14 @@ with open(args.output, writeModes) as csvfile:
                 # Prepare input data
                 
                 obs_position = [TCP_pose[0],TCP_pose[2],TCP_pose[1]] # vector3
-                obs_orientation = [TCP_pose[3],TCP_pose[5],TCP_pose[4]] # vector3
+                obs_rotation = [np.rad2deg(TCP_pose[3]),np.rad2deg(TCP_pose[5]),np.rad2deg(TCP_pose[4])] # vector3 from rad form RTDE to degree in unity
                 obs_force = [TCP_force[0],TCP_force[2],TCP_force[1]] # vector3
                 obs_torque = [TCP_force[3],TCP_force[5],TCP_force[4]] # vector3
                 obs_velocity = [TCP_speed[0],TCP_speed[2],TCP_speed[1]] # vector3
                 obs_ang_velocity = [TCP_speed[3],TCP_speed[5],TCP_speed[4]] # vector3
-                # convert tool orientation to euler rotation
-                obs_rotation = to_rotation(obs_orientation)
-                obs_target_rotation = to_rotation(obs_target_orientation)
-
-                # visualize
-                fig = plt.figure()
-                ax = fig.add_subplot(111, projection='3d')
-                X, Z, Y = obs_position
-                U, W, V = obs_rotation
-                ax.quiver(X, Y, Z, U, V, W)
-                # ax.set_xlim([-0.9, 0.9])
-                # ax.set_ylim([-0.9, 0.9])
-                # ax.set_zlim([0, 0.9])
-                plt.show()
+                # debugging: convert tool orientation to euler rotation. Not needed for control
+                # obs_rotation = to_rotation(obs_orientation)
+                # obs_target_rotation = to_rotation(obs_target_orientation)
 
                 # concatenate all observation into an input tensor
                 input_data = np.array((obs_target_pos + obs_target_rotation + obs_position + obs_rotation
@@ -253,9 +242,10 @@ with open(args.output, writeModes) as csvfile:
                 ort_inputs = {ort_session.get_inputs()[0].name: input_data}
                 ort_outputs = ort_session.run(None, ort_inputs) # gets actions from obs
                 actions = ort_outputs[2][0]
-                time_step = 1 / args.frequency
+                time_step = 1 / 100 # args.frequency
                 act_velocity = [actions[0],actions[1],actions[2],] # keep unity XZY for calculate new position
                 act_ang_velocity = [actions[3],actions[4],actions[5],] # keep unity XZY for calculate new rotation
+                print("action speed:", act_velocity,act_velocity)
 
                 # Send actions back to Robot
                 if move_completed and state.output_int_register_0 == 1:
@@ -270,19 +260,8 @@ with open(args.output, writeModes) as csvfile:
                     # new_orientation = to_orientation(new_rotation) # UR XYZ coordinate
                     new_setp = new_position + new_rotation
                     list_to_setp(setp, new_setp)
-                    print("New pose = " + str(new_setp))
+                    # print("New pose = " + str(new_setp))
                     # send new setpoint
-                    # visualize
-                    fig = plt.figure()
-                    ax = fig.add_subplot(111, projection='3d')
-                    X, Y, Z = new_position
-                    U, V, W = new_rotation
-                    ax.quiver(X, Y, Z, U, V, W)
-                    # ax.set_xlim([-0.9, 0.9])
-                    # ax.set_ylim([-0.9, 0.9])
-                    # ax.set_zlim([0, 0.9])
-                    plt.show()
-
                     con.send(setp)
                     watchdog.input_int_register_0 = 1
                 elif not move_completed and state.output_int_register_0 == 0:
