@@ -187,8 +187,8 @@ with open(args.output, writeModes) as csvfile:
     move_completed = True
     keep_running = True
     # Set Target
-    obs_target_pos = [0.37797, 0.54870, 0.5524,] # Manually measure vector3
-    obs_target_rotation = [1.201, 2.908, -0.233] # vector3
+    obs_target_pos = [0.317, 0.403, 0.530,] # Manually measure vector3 
+    obs_target_rotation = [-0.332, 1.670, 1.083] # vector3 
     # Debugging: obs_target_orientation = to_orientation(target_rotarion) # vector3
 
     while keep_running:
