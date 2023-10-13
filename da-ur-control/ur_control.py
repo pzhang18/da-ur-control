@@ -31,10 +31,13 @@ import rtde.rtde as rtde
 import rtde.rtde_config as rtde_config
 import rtde.csv_writer as csv_writer
 import rtde.csv_binary_writer as csv_binary_writer
+import URBasic
 
 import onnxruntime as ort
 import numpy as np
 import math
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 # parameters
 parser = argparse.ArgumentParser()
@@ -179,7 +182,7 @@ with open(args.output, writeModes) as csvfile:
     writer.writeheader()
 
     # Control loop
-    delta = 0.001
+    delta = 0.001 # for debugging
     i = 1
     move_completed = True
     keep_running = True
@@ -230,6 +233,18 @@ with open(args.output, writeModes) as csvfile:
                 # convert tool orientation to euler rotation
                 obs_rotation = to_rotation(obs_orientation)
                 obs_target_rotation = to_rotation(obs_target_orientation)
+
+                # visualize
+                fig = plt.figure()
+                ax = fig.add_subplot(111, projection='3d')
+                X, Z, Y = obs_position
+                U, W, V = obs_rotation
+                ax.quiver(X, Y, Z, U, V, W)
+                # ax.set_xlim([-0.9, 0.9])
+                # ax.set_ylim([-0.9, 0.9])
+                # ax.set_zlim([0, 0.9])
+                plt.show()
+
                 # concatenate all observation into an input tensor
                 input_data = np.array((obs_target_pos + obs_target_rotation + obs_position + obs_rotation
                             + obs_force + obs_torque + obs_velocity + obs_ang_velocity),
@@ -257,6 +272,17 @@ with open(args.output, writeModes) as csvfile:
                     list_to_setp(setp, new_setp)
                     print("New pose = " + str(new_setp))
                     # send new setpoint
+                    # visualize
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111, projection='3d')
+                    X, Y, Z = new_position
+                    U, V, W = new_rotation
+                    ax.quiver(X, Y, Z, U, V, W)
+                    # ax.set_xlim([-0.9, 0.9])
+                    # ax.set_ylim([-0.9, 0.9])
+                    # ax.set_zlim([0, 0.9])
+                    plt.show()
+
                     con.send(setp)
                     watchdog.input_int_register_0 = 1
                 elif not move_completed and state.output_int_register_0 == 0:
